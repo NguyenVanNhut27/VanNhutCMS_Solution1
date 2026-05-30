@@ -1,117 +1,127 @@
 ﻿using CMS.Data;
 using CMS.Data.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CMS.Backend.Controllers
 {
+    // ĐÃ SỬA: Đổi "Administrator" thành "Admin" để khớp chuẩn với Enum UserRole
+    [Authorize(Roles = "Admin")]
     public class UserController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        // "Tiêm" kết nối vào Controller
         public UserController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public IActionResult Index()
+        // ==============================
+        // 1. DANH SÁCH (READ)
+        // ==============================
+        public async Task<IActionResult> Index()
         {
-            // Lấy dữ liệu từ bảng Users trong SQL
-            var data = _context.Users.ToList();
+            var data = await _context.Users.ToListAsync();
             return View(data);
         }
 
-        // 1. Hàm GET: Dùng để hiển thị giao diện Form cho nhập
+        // ==============================
+        // 2. THÊM MỚI (CREATE)
+        // ==============================
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-        // 2. Hàm POST: Dùng để đón dữ liệu từ Form gửi lên và lưu vào SQL
         [HttpPost]
-        public IActionResult Create(User model)
+        [ValidateAntiForgeryToken] // Bảo mật: Chống giả mạo Request
+        public async Task<IActionResult> Create(User model)
         {
-            // BƯỚC 1: Mã hóa mật khẩu trước khi lưu
-            if (!string.IsNullOrEmpty(model.PasswordHash))
+            if (ModelState.IsValid)
             {
-                model.PasswordHash = HashPassword(model.PasswordHash);
+                // Mã hóa mật khẩu trước khi lưu
+                if (!string.IsNullOrEmpty(model.PasswordHash))
+                {
+                    model.PasswordHash = HashPassword(model.PasswordHash);
+                }
+
+                model.CreatedAt = System.DateTime.Now;
+
+                _context.Users.Add(model);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
             }
-
-            // BƯỚC 2: Thêm dữ liệu vào bộ nhớ tạm của Entity Framework
-            _context.Users.Add(model);
-
-            // BƯỚC 3: Ra lệnh ghi dữ liệu thật sự vào SQL Server
-            _context.SaveChanges();
-
-            // Tự động quay về trang danh sách
-            return RedirectToAction("Index");
+            return View(model);
         }
 
-        public IActionResult Delete(int id)
+        // ==============================
+        // 3. XÓA (DELETE)
+        // ==============================
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
         {
-            // Tìm đối tượng người dùng trong Database bằng Id
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
 
-            // Kiểm tra nếu tìm thấy thì mới xóa
             if (user != null)
             {
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
-        // 1. Hàm GET: Tìm dữ liệu cũ và đổ lên Form
+        // ==============================
+        // 4. CẬP NHẬT (UPDATE)
+        // ==============================
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            // Tìm người dùng trong Database theo Id
-            var user = _context.Users.Find(id);
-
+            var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
             // Xóa rỗng trường mật khẩu khi hiển thị lên giao diện để bảo mật
-            // Người dùng chỉ nhập lại nếu thực sự muốn đổi mật khẩu mới
             user.PasswordHash = "";
-
             return View(user);
         }
 
-        // 2. Hàm POST: Nhận dữ liệu mới từ người dùng và lưu lại
         [HttpPost]
-        public IActionResult Edit(User model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, User model)
         {
-            // Bước 1: Lấy user hiện tại từ Database lên để so sánh
-            var existingUser = _context.Users.Find(model.Id);
+            if (id != model.Id) return NotFound();
 
-            if (existingUser != null)
+            if (ModelState.IsValid)
             {
-                // Cập nhật các thông tin cơ bản
+                var existingUser = await _context.Users.FindAsync(model.Id);
+                if (existingUser == null) return NotFound();
+
+                // Cập nhật các thông tin cơ bản (Bổ sung thêm Email và IsActive)
                 existingUser.Username = model.Username;
                 existingUser.FullName = model.FullName;
+                existingUser.Email = model.Email;
                 existingUser.Role = model.Role;
+                existingUser.IsActive = model.IsActive;
 
-                // BƯỚC 2: Kiểm tra mật khẩu.
-                // CHỈ mã hóa và ghi đè mật khẩu nếu người dùng có nhập dữ liệu vào ô Password
+                // CHỈ mã hóa và ghi đè mật khẩu nếu người dùng có nhập dữ liệu mới
                 if (!string.IsNullOrEmpty(model.PasswordHash))
                 {
                     existingUser.PasswordHash = HashPassword(model.PasswordHash);
                 }
 
-                // Lệnh cập nhật đối tượng vào bộ nhớ tạm
                 _context.Users.Update(existingUser);
+                await _context.SaveChangesAsync();
 
-                // Lưu thay đổi thực sự xuống SQL Server
-                _context.SaveChanges();
+                return RedirectToAction(nameof(Index));
             }
-
-            // Quay lại trang danh sách để xem kết quả
-            return RedirectToAction("Index");
+            return View(model);
         }
 
         // ==========================================
@@ -119,12 +129,11 @@ namespace CMS.Backend.Controllers
         // ==========================================
         private string HashPassword(string password)
         {
+            if (string.IsNullOrEmpty(password)) return string.Empty;
+
             using (var sha256 = SHA256.Create())
             {
-                // Chuyển chuỗi thành mảng byte
                 byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                // Chuyển mảng byte ngược lại thành chuỗi Hex string để lưu vào Database
                 var builder = new StringBuilder();
                 for (int i = 0; i < bytes.Length; i++)
                 {

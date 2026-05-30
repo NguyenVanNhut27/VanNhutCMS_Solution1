@@ -1,17 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace CMS.Data.Entities
 {
+    // KHÔNG để enum UserRole ở đây nữa, vì đã có ở file khác
     public class User
     {
+        [Key]
         public int Id { get; set; }
-        public string Username { get; set; }
-        public string PasswordHash { get; set; }
-        public string FullName { get; set; }
-        public string Role { get; set; } // Quản trị viên hoặc Biên tập viên
+
+        [Required, MaxLength(50)]
+        public string Username { get; set; } = string.Empty;
+
+        [Required]
+        public string PasswordHash { get; set; } = string.Empty;
+
+        [Required, MaxLength(100)]
+        public string FullName { get; set; } = string.Empty;
+
+        public string? Email { get; set; }
+
+        public UserRole Role { get; set; } // C# sẽ tự động lấy từ file enum kia
+
+        public bool IsActive { get; set; } = true;
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

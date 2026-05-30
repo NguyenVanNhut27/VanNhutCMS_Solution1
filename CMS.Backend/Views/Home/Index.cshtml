@@ -1,26 +1,128 @@
-﻿@model IEnumerable<CMS.Data.Entities.Post>
+﻿@model IEnumerable<CMS.Data.Entities.Promotion>
 @{
     Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Bảng điều khiển";
 }
-<div class="container mt-5">
-    <h2 class="text-center mb-4 text-danger">TIN TỨC MỚI NHẤT</h2>
-    <div class="row">
-        @foreach (var item in Model)
-        {
-            <div class="col-md-4">
-                <div class="card shadow-sm h-100">
-                    <img src="@item.ImageUrl" class="card-img-top" alt="Thumbnail">
-                    <div class="card-body">
-                        <span class="badge bg-primary mb-2">@item.Category.Name</span>
-                        <h5 class="card-title">@item.Title</h5>
-                        <p class="card-text text-truncate">@item.Content</p>
-                        <a href="/Post/Details/@item.Id" class="btn btn-outline-danger btn-sm">Đọc tiếp</a>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark fw-bold mb-0">Bảng Điều Khiển</h2>
+            <p class="text-muted mb-0">Tổng quan hệ thống Quản lý Nhà Hàng</p>
+        </div>
+        <a asp-controller="Promotion" asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-tag"></i> Tạo khuyến mãi mới
+        </a>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow rounded-4 border-0 h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase fw-semibold mb-2">Đơn Hoàn Thành</h6>
+                        <h2 class="mb-0 fw-bold">@ViewBag.TotalOrders</h2>
                     </div>
-                    <div class="card-footer text-muted small">
-                        Ngày đăng: @item.CreatedDate.ToString("dd/MM/yyyy")
+                    <i class="bi bi-cart-check fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow rounded-4 border-0 h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase fw-semibold mb-2">Doanh Thu</h6>
+                        <h2 class="mb-0 fw-bold">@(ViewBag.TotalRevenue?.ToString("N0") ?? "0") đ</h2>
+                    </div>
+                    <i class="bi bi-currency-dollar fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow rounded-4 border-0 h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase fw-semibold mb-2">Món Ăn Khả Dụng</h6>
+                        <h2 class="mb-0 fw-bold">@ViewBag.TotalProducts</h2>
+                    </div>
+                    <i class="bi bi-egg-fried fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow rounded-4 border-0 h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="text-uppercase fw-semibold mb-2">Khách VIP</h6>
+                        <h2 class="mb-0 fw-bold">@ViewBag.TotalCustomers</h2>
+                    </div>
+                    <i class="bi bi-people fs-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-megaphone text-danger me-2"></i>Khuyến Mãi Đang Diễn Ra</h5>
+                    <a asp-controller="Promotion" asp-action="Index" class="btn btn-sm btn-outline-secondary">Xem tất cả</a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <div class="col-md-6">
+                                    <div class="card h-100 border rounded-3 overflow-hidden">
+                                        <img src="@item.ImageUrl" class="card-img-top" alt="Thumbnail" style="height: 180px; object-fit: cover;">
+                                        <div class="card-body p-3">
+                                            <span class="badge bg-danger mb-2">Giảm @item.DiscountPercent%</span>
+                                            <h6 class="card-title fw-bold text-truncate" title="@item.Title">@item.Title</h6>
+                                            <p class="card-text small text-muted text-truncate" style="max-height: 40px;">
+                                                @item.Content
+                                            </p>
+                                        </div>
+                                        <div class="card-footer bg-white border-top-0 pt-0 d-flex justify-content-between align-items-center">
+                                            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>@item.StartDate.ToString("dd/MM") - @item.EndDate.ToString("dd/MM/yyyy")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 text-center py-5">
+                                <i class="bi bi-inbox fs-1 text-muted"></i>
+                                <p class="text-muted mt-2">Chưa có khuyến mãi nào đang chạy.</p>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
-        }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-lightning-charge text-warning me-2"></i>Lối Tắt Nhanh</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush rounded-4">
+                        <a asp-controller="Product" asp-action="Create" class="list-group-item list-group-item-action py-3">
+                            <i class="bi bi-plus-circle text-success me-2"></i> Thêm món ăn mới
+                        </a>
+                        <a asp-controller="Order" asp-action="KitchenQueue" class="list-group-item list-group-item-action py-3">
+                            <i class="bi bi-fire text-danger me-2"></i> Xem màn hình Bếp
+                        </a>
+                        <a asp-controller="User" asp-action="Index" class="list-group-item list-group-item-action py-3">
+                            <i class="bi bi-person-gear text-secondary me-2"></i> Quản lý nhân viên
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

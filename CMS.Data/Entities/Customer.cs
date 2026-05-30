@@ -1,33 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using System.ComponentModel.DataAnnotations;
 
 namespace CMS.Data.Entities
 {
-    // Khách hàng
     public class Customer
     {
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        public string FullName { get; set; }
+        [Required, MaxLength(100)]
+        public string FullName { get; set; } = string.Empty; // Sửa lỗi Nullable chuỗi
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+        [MaxLength(15)]
+        public string? PhoneNumber { get; set; }
 
-        public string? Phone { get; set; }
+        [MaxLength(100)]
+        public string? Email { get; set; }
+        public int RewardPoints { get; set; } = 0; // Điểm tích lũy
 
-        public string? Address { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [Required]
-        public string Password { get; set; } // Lưu mật khẩu thô theo yêu cầu tối giản
-
-        public virtual ICollection<Order>? Orders { get; set; }
+        // Khách hàng có thể có nhiều lần đến ăn (Nhiều Order)
+        // Khởi tạo List rỗng để tránh lỗi NullReferenceException khi Add phần tử
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

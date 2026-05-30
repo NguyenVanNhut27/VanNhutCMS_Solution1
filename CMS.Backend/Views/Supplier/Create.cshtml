@@ -1,0 +1,44 @@
+﻿@model CMS.Data.Entities.Supplier
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Thêm Nhà Cung Cấp";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-truck me-2"></i>Thêm Nhà Cung Cấp Mới</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-dark">Tên Nhà Cung Cấp <span class="text-danger">*</span></label>
+                                <input asp-for="Name" class="form-control" required placeholder="VD: Công ty Thực phẩm ABC..." />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Số điện thoại <span class="text-danger">*</span></label>
+                                <input asp-for="PhoneNumber" class="form-control" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Email</label>
+                                <input asp-for="Email" type="email" class="form-control" />
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-dark">Địa chỉ</label>
+                                <input asp-for="Address" class="form-control" placeholder="Số nhà, đường, quận, thành phố..." />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Lưu thông tin</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

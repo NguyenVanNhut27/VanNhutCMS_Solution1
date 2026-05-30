@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CMS.Data.Entities
@@ -15,18 +9,20 @@ namespace CMS.Data.Entities
         public int Id { get; set; }
 
         public int OrderId { get; set; }
+        public Order Order { get; set; } = null!; // Báo cho C# biết EF Core sẽ lo việc điền dữ liệu
 
         public int ProductId { get; set; }
+        public Product Product { get; set; } = null!; // Báo cho C# biết EF Core sẽ lo việc điền dữ liệu
 
+        [Required]
         public int Quantity { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal UnitPrice { get; set; } // Giá tại thời điểm mua
+        public decimal UnitPrice { get; set; } // Giá chốt tại thời điểm gọi món (đề phòng sau này giá menu tăng)
 
-        [ForeignKey("OrderId")]
-        public virtual Order? Order { get; set; }
+        [MaxLength(200)]
+        public string? Note { get; set; } // Ghi chú riêng cho bếp: Ít cay, không hành, nhiều đá...
 
-        [ForeignKey("ProductId")]
-        public virtual Product? Product { get; set; }
+        public bool IsServed { get; set; } = false; // Trạng thái: Bếp đã làm xong và Phục vụ đã mang ra bàn chưa?
     }
 }

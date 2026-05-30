@@ -1,77 +1,138 @@
-﻿HTML
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ThaiCMS Admin</title>
+    <title>@ViewData["Title"] - Quản Lý Nhà Hàng</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        .sidebar {
-            min-height: 100vh;
-            background-color: #212529;
-            color: white;
+        body {
+            background-color: #f4f6f9;
         }
 
-            .sidebar a {
-                color: #adb5bd;
-                text-decoration: none;
-                display: block;
-                padding: 10px 20px;
+        /* Tùy chỉnh thanh Sidebar bên trái */
+        .sidebar {
+            min-height: 100vh;
+            background-color: #1e1e2d;
+            color: #9899ac;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+
+        .sidebar-user {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #6c7293;
+            padding: 1.5rem 1.5rem 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar a {
+            color: #9899ac;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+        }
+
+            .sidebar a i {
+                font-size: 1.2rem;
+                margin-right: 12px;
+                width: 20px;
+                text-align: center;
             }
 
-                .sidebar a:hover {
-                    background-color: #343a40;
-                    color: white;
-                }
-
-            .sidebar .active {
-                background-color: #0d6efd;
-                color: white;
+            .sidebar a:hover, .sidebar a.active {
+                color: #ffffff;
+                background-color: #1b1b29;
+                border-left-color: #0d6efd;
             }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 sidebar p-0">
-                <div class="p-3 text-center border-bottom border-secondary">
-                    <h4 class="text-white">ThaiCMS Admin</h4>
+            <nav class="col-md-3 col-lg-2 sidebar p-0 d-flex flex-column sticky-top" style="height: 100vh; overflow-y: auto;">
+                <div class="sidebar-brand text-center fs-5">
+                    <i class="bi bi-shop text-warning me-2"></i>SMART POS
                 </div>
-                <div class="mt-3">
-                    <a asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-speedometer2"></i> Bảng điều khiển
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="sidebar-user text-center">
+                        <div class="mb-2">
+                            <i class="bi bi-person-circle text-secondary" style="font-size: 3rem;"></i>
+                        </div>
+                        <div class="fw-bold text-white mb-1">@User.FindFirst("FullName")?.Value</div>
+                        <div class="small text-warning mb-3 fw-bold">Vai trò: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</div>
+                        <a class="btn btn-outline-danger btn-sm rounded-pill px-4" asp-controller="Account" asp-action="Logout">
+                            <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
+                        </a>
+                    </div>
+                }
+
+                <div class="mt-2 pb-5">
+                    <div class="nav-title">Nghiệp vụ Bán Hàng</div>
+                    <a asp-controller="Order" asp-action="Index">
+                        <i class="bi bi-grid-3x3-gap"></i> Sơ đồ Bàn ăn
                     </a>
-                    <a asp-controller="Category" asp-action="Index">
-                        <i class="bi bi-grid"></i> Quản lý Danh mục
-                    </a>
-                    <a asp-controller="Post" asp-action="Index">
-                        <i class="bi bi-file-earmark-post"></i> Quản lý Bài viết
-                    </a>
-                    <a asp-controller="User" asp-action="Index">
-                        <i class="bi bi-people"></i> Quản lý Thành viên
-                    </a>
-                    <a asp-controller="ProductCategory" asp-action="Index">
-                        <i class="bi bi-grid"></i> Danh mục sản phẩm
-                    </a>
-                    <a asp-controller="Product" asp-action="Index">
-                        <i class="bi bi-box-seam"></i> Sản phẩm
+                    <a asp-controller="Order" asp-action="KitchenQueue">
+                        <i class="bi bi-fire text-danger"></i> Màn hình Bếp
                     </a>
                     <a asp-controller="Customer" asp-action="Index">
-                        <i class="bi bi-people"></i> Khách hàng
-                    </a>
-                    <a asp-controller="Order" asp-action="Index">
-                        <i class="bi bi-grid"></i> Đơn hàng
-                    </a>
-                    <a asp-controller="OrderDetail" asp-action="Index">
-                        <i class="bi bi-grid"></i> Đơn hàng chi tiết
+                        <i class="bi bi-people"></i> Khách hàng (Tích điểm)
                     </a>
 
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <div class="nav-title">Quản lý Thực Đơn</div>
+                        <a asp-controller="CategoryProduct" asp-action="Index">
+                            <i class="bi bi-tags"></i> Danh mục món ăn
+                        </a>
+                        <a asp-controller="Product" asp-action="Index">
+                            <i class="bi bi-egg-fried"></i> Danh sách Món ăn
+                        </a>
+                        <a asp-controller="Promotion" asp-action="Index">
+                            <i class="bi bi-megaphone"></i> Chương trình Khuyến mãi
+                        </a>
+
+                        <div class="nav-title">Quản lý Kho hàng</div>
+                        <a asp-controller="Supplier" asp-action="Index">
+                            <i class="bi bi-truck"></i> Nhà cung cấp
+                        </a>
+                        <a asp-controller="Inventory" asp-action="Index">
+                            <i class="bi bi-box-seam"></i> Nhập kho nguyên liệu
+                        </a>
+
+                        <div class="nav-title">Hệ thống</div>
+                        <a asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-bar-chart-line"></i> Báo cáo Doanh thu
+                        </a>
+                        <a asp-controller="User" asp-action="Index">
+                            <i class="bi bi-person-badge"></i> Quản lý Nhân sự
+                        </a>
+                    }
                 </div>
             </nav>
 
-            <main class="col-md-9 col-lg-10 ms-sm-auto p-4">
+            <main class="col-md-9 col-lg-10 ms-sm-auto p-4 bg-light">
                 @RenderBody()
             </main>
         </div>

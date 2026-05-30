@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,17 +10,27 @@ namespace CMS.Data.Entities
         [Key]
         public int Id { get; set; }
 
-        public DateTime OrderDate { get; set; } = DateTime.Now;
+        public DateTime OrderTime { get; set; } = DateTime.Now;
+        public DateTime? PaymentTime { get; set; } // Thời gian xuất bill
 
-        public int CustomerId { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalAmount { get; set; }
 
-        public int Status { get; set; } // 0: Chờ duyệt, 1: Đang giao, 2: Đã xong
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public PaymentMethod? PaymentMethod { get; set; } // Hình thức thanh toán
 
-        public string? Notes { get; set; }
+        public string? Note { get; set; } // Ghi chú chung (Khách vội, cần xuất hóa đơn đỏ...)
 
-        [ForeignKey("CustomerId")]
-        public virtual Customer? Customer { get; set; }
+        // Bàn nào gọi? (Có thể Null nếu là đơn mua mang đi - Takeaway)
+        public int? DiningTableId { get; set; }
+        public DiningTable? DiningTable { get; set; }
 
-        public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
+        // Khách nào mua? (Có thể Null nếu là khách vãng lai không tích điểm)
+        public int? CustomerId { get; set; }
+        public Customer? Customer { get; set; }
+
+        // Danh sách các món trong hóa đơn
+        // Khởi tạo List rỗng để triệt tiêu cảnh báo vàng và tránh lỗi Null
+        public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
     }
 }

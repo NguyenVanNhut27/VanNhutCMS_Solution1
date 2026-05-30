@@ -1,49 +1,89 @@
 ﻿@model IEnumerable<CMS.Data.Entities.User>
+@using CMS.Data.Entities
+
 @{
     Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Quản lý Nhân sự";
 }
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="text-dark">QUẢN LÝ THÀNH VIÊN</h2>
-        <a asp-action="Create" class="btn btn-success btn-sm">
-            <i class="bi bi-plus-circle"></i> + Thêm thành viên mới
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark fw-bold mb-0">Danh Sách Nhân Sự</h2>
+            <p class="text-muted mb-0">Quản lý tài khoản và phân quyền hệ thống</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-person-plus"></i> Thêm nhân sự mới
         </a>
     </div>
 
-    <table class="table table-hover shadow-sm border">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Tên Đăng Nhập</th>
-                <th>Họ Và Tên</th>
-                <th>Quyền Hạn</th>
-                <th style="width:150px">Thao Tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
-                <tr>
-                    <td>@user.Id</td>
-                    <td><strong>@user.Username</strong></td>
-                    <td>@user.FullName</td>
-                    <td>
-                        @if (user.Role == "Administrator")
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-0">
+            <table class="table table-hover table-borderless align-middle mb-0">
+                <thead class="table-light border-bottom">
+                    <tr>
+                        <th class="ps-4">ID</th>
+                        <th>Tên Đăng Nhập</th>
+                        <th>Họ Và Tên</th>
+                        <th>Vai Trò (Phân Quyền)</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var user in Model)
                         {
-                            <span class="badge bg-danger">@user.Role</span>
+                            <tr class="border-bottom">
+                                <td class="ps-4 fw-semibold text-muted">#@user.Id</td>
+                                <td>
+                                    <div class="fw-bold text-dark">
+                                        <i class="bi bi-person-circle text-secondary me-1"></i> @user.Username
+                                    </div>
+                                </td>
+                                <td>@user.FullName</td>
+                                <td>
+                                    @* CẬP NHẬT: So sánh với 4 quyền chuẩn của Nhà Hàng *@
+                                    @if (user.Role == UserRole.Admin)
+                                    {
+                                        <span class="badge bg-danger px-3 py-2 rounded-pill"><i class="bi bi-shield-lock me-1"></i> Quản lý (Admin)</span>
+                                    }
+                                    else if (user.Role == UserRole.Cashier)
+                                    {
+                                        <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-cash-coin me-1"></i> Thu ngân</span>
+                                    }
+                                    else if (user.Role == UserRole.Chef)
+                                    {
+                                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="bi bi-fire me-1"></i> Đầu bếp</span>
+                                    }
+                                    else if (user.Role == UserRole.Waiter)
+                                    {
+                                        <span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i class="bi bi-cup-hot me-1"></i> Phục vụ</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                        <i class="bi bi-pencil-square"></i> Sửa
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản này?')">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </a>
+                                </td>
+                            </tr>
                         }
-                        else
-                        {
-                            <span class="badge bg-info text-dark">@user.Role</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-sm btn-outline-danger"
-                           onclick="return confirm('Bạn có chắc chắn muốn xóa thành viên này?')">Xóa</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-people fs-1 d-block mb-3 text-secondary opacity-50"></i>
+                                <h5>Chưa có nhân sự nào</h5>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
