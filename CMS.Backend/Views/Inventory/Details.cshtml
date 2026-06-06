@@ -1,0 +1,73 @@
+﻿@model CMS.Data.Entities.InventoryReceipt
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Chi tiết Phiếu Nhập";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark fw-bold mb-0">Phiếu Nhập #RC-@Model.Id</h2>
+            <p class="text-muted mb-0">Nhà cung cấp: <span class="text-primary fw-bold">@(Model.Supplier?.Name ?? "N/A")</span></p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-light border"><i class="bi bi-arrow-left"></i> Quay lại</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Thông tin</h6>
+                    <p>Ngày nhập: <b>@Model.ReceiptDate.ToString("dd/MM/yyyy HH:mm")</b></p>
+                    <p>Ghi chú: <i>@(Model.Note ?? "Không có")</i></p>
+                    <hr>
+                    <h4 class="text-danger fw-bold">Tổng tiền: @Model.TotalAmount.ToString("N0") đ</h4>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">Danh sách nguyên liệu</h6>
+                    <a asp-controller="InventoryReceiptDetail" asp-action="Create" asp-route-receiptId="@Model.Id" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i> Thêm hàng
+                    </a>
+                </div>
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Tên sản phẩm</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Giá nhập</th>
+                            <th class="text-end">Thành tiền</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Details != null && Model.Details.Any())
+                        {
+                            foreach (var item in Model.Details)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold">@(item.Product?.Name ?? "Sản phẩm")</td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@item.PurchasePrice.ToString("N0") đ</td>
+                                    <td class="text-end fw-bold text-danger">@((item.Quantity * item.PurchasePrice).ToString("N0")) đ</td>
+                                    <td class="text-center">
+                                        <a asp-controller="InventoryReceiptDetail" asp-action="Delete" asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-link text-danger" onclick="return confirm('Xóa?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

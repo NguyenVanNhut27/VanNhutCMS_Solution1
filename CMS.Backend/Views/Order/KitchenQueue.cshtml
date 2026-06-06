@@ -1,0 +1,102 @@
+﻿@model IEnumerable<CMS.Data.Entities.OrderDetail>
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Màn Hình Bếp - KDS";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark fw-bold mb-0"><i class="bi bi-fire text-danger me-2"></i>Màn Hình Bếp (Kitchen Queue)</h2>
+            <p class="text-muted mb-0">Danh sách các món đang chờ chế biến</p>
+        </div>
+        <button class="btn btn-outline-secondary shadow-sm" onclick="location.reload();">
+            <i class="bi bi-arrow-clockwise"></i> Làm mới (F5)
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 bg-light">
+        <div class="card-body p-3">
+            @if (Model != null && Model.Any())
+            {
+                <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                    @foreach (var item in Model.OrderBy(m => m.Order?.OrderTime))
+                    {
+                        // Tính toán thời gian khách đã chờ
+                        var waitMinutes = item.Order != null ? (int)(DateTime.Now - item.Order.OrderTime).TotalMinutes : 0;
+                        var timeColorClass = waitMinutes >= 15 ? "text-danger" : (waitMinutes >= 10 ? "text-warning" : "text-success");
+                        var borderWarningClass = waitMinutes >= 15 ? "border-danger" : "border-warning";
+
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm rounded-4 border-start @borderWarningClass border-5">
+                                <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+                                    
+                                    <span class="badge bg-dark fs-6 px-3 py-2 rounded-pill shadow-sm">
+                                        @if (item.Order?.OrderType == "Takeaway")
+                                        {
+                                            <i class="bi bi-bag me-1"></i> <span>Mang Đi</span>
+                                        }
+                                        else if (item.Order?.OrderType == "Delivery")
+                                        {
+                                            <i class="bi bi-motorcycle me-1"></i> <span>Giao Hàng</span>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-shop me-1"></i> @(item.Order?.DiningTable?.Name ?? "Bàn Trống")
+                                        }
+                                    </span>
+
+                                    <span class="@timeColorClass small fw-bold" title="Giờ gọi: @item.Order?.OrderTime.ToString("HH:mm")">
+                                        <i class="bi bi-stopwatch me-1"></i> Chờ @waitMinutes phút
+                                    </span>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-warning text-dark fw-bold rounded-3 px-3 py-2 fs-4 me-3 shadow-sm">
+                                            x@(item.Quantity)
+                                        </div>
+                                        <div>
+                                            <h4 class="fw-bold text-dark mb-1">@(item.Product?.Name ?? "Tên món")</h4>
+
+                                            @if (!string.IsNullOrEmpty(item.Note))
+                                            {
+                                                <div class="text-danger fw-bold fst-italic mt-2 bg-danger bg-opacity-10 p-2 rounded border border-danger border-opacity-25">
+                                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Ghi chú: @item.Note
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-muted small mt-1">Không có ghi chú</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-white border-top-0 pb-3 pt-0">
+                                    <a asp-controller="Order" asp-action="CompleteDish" asp-route-detailId="@item.Id" class="btn btn-success w-100 fw-bold fs-5 shadow-sm">
+                                        <i class="bi bi-check2-circle me-1"></i> Đã Nấu Xong
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-emoji-smile fs-1 text-success mb-3 d-block"></i>
+                    <h4 class="text-muted">Tuyệt vời! Hiện tại bếp đang trống order.</h4>
+                    <p class="text-muted mb-0">Chờ phục vụ đẩy đơn xuống nhé!</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tự động tải lại trang sau 30 giây để cập nhật món mới
+    setTimeout(function () {
+        window.location.reload(1);
+    }, 30000);
+</script>

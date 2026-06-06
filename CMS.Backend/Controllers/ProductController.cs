@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Linq;
@@ -12,14 +13,16 @@ using CMS.Data.Entities;
 
 namespace CMS.Backend.Controllers
 {
-    [Authorize(Roles = "Admin")] // Chỉ Quản lý mới được chỉnh sửa món ăn
+    [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(ApplicationDbContext context)
+        public ProductController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // ==============================
@@ -27,20 +30,17 @@ namespace CMS.Backend.Controllers
         // ==============================
         public async Task<IActionResult> Index()
         {
-            // Join 2 bảng để lấy tên Danh mục ra ngoài giao diện
             var products = await _context.Products.Include(p => p.CategoryProduct).ToListAsync();
             return View(products);
         }
 
         // ==============================
-        // 2. THÊM MỚI MÓN ĂN
+        // 2. THÊM MỚI (GET & POST)
         // ==============================
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            // Truyền danh sách Category vào ViewBag để tạo Dropdown chọn
-            var categories = await _context.CategoriesProducts.ToListAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name");
+            ViewBag.CategoryList = new SelectList(await _context.CategoriesProducts.ToListAsync(), "Id", "Name");
             return View();
         }
 
@@ -48,23 +48,13 @@ namespace CMS.Backend.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product model, IFormFile? uploadImage)
         {
-            ModelState.Remove("CategoryProduct"); // Bỏ qua kiểm tra khóa ngoại tự động để tránh lỗi Form
+            ModelState.Remove("CategoryProduct"); // Bỏ qua validation object để tránh lỗi
 
             if (ModelState.IsValid)
             {
                 if (uploadImage != null && uploadImage.Length > 0)
                 {
-                    string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await uploadImage.CopyToAsync(stream);
-                    }
-                    model.ImageUrl = "/uploads/" + fileName;
+                    model.ImageUrl = await SaveImage(uploadImage);
                 }
 
                 _context.Products.Add(model);
@@ -72,13 +62,12 @@ namespace CMS.Backend.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var categories = await _context.CategoriesProducts.ToListAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name", model.CategoryProductId);
+            ViewBag.CategoryList = new SelectList(await _context.CategoriesProducts.ToListAsync(), "Id", "Name", model.CategoryProductId);
             return View(model);
         }
 
         // ==============================
-        // 3. CẬP NHẬT MÓN ĂN
+        // 3. CẬP NHẬT (GET & POST)
         // ==============================
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
@@ -86,8 +75,7 @@ namespace CMS.Backend.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            var categories = await _context.CategoriesProducts.ToListAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name", product.CategoryProductId);
+            ViewBag.CategoryList = new SelectList(await _context.CategoriesProducts.ToListAsync(), "Id", "Name", product.CategoryProductId);
             return View(product);
         }
 
@@ -100,45 +88,29 @@ namespace CMS.Backend.Controllers
 
             if (ModelState.IsValid)
             {
+                var oldProduct = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+                if (oldProduct == null) return NotFound();
+
                 if (uploadImage != null && uploadImage.Length > 0)
                 {
-                    string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
-                    string filePath = Path.Combine(folder, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await uploadImage.CopyToAsync(stream);
-                    }
-                    model.ImageUrl = "/uploads/" + fileName;
+                    // Xóa ảnh cũ
+                    DeleteImage(oldProduct.ImageUrl);
+                    // Upload ảnh mới
+                    model.ImageUrl = await SaveImage(uploadImage);
                 }
-
-                // --------------------------------------------------------
-                // BẢO TOÀN DỮ LIỆU CŨ TỪ DATABASE (CHỐNG MẤT TỒN KHO)
-                // --------------------------------------------------------
-                var oldProduct = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == model.Id);
-                if (oldProduct != null)
+                else
                 {
-                    // 1. Giữ lại ảnh cũ nếu không có ảnh mới upload lên
-                    if (string.IsNullOrEmpty(model.ImageUrl))
-                    {
-                        model.ImageUrl = oldProduct.ImageUrl;
-                    }
-
-                    // 2. Ép cứng số lượng tồn kho bằng với data cũ trong SQL, 
-                    // tránh việc Form Edit không truyền lên làm reset về 0
-                    model.StockQuantity = oldProduct.StockQuantity;
+                    model.ImageUrl = oldProduct.ImageUrl;
                 }
+
+                model.StockQuantity = oldProduct.StockQuantity; // Bảo toàn tồn kho
 
                 _context.Products.Update(model);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            var categories = await _context.CategoriesProducts.ToListAsync();
-            ViewBag.CategoryList = new SelectList(categories, "Id", "Name", model.CategoryProductId);
+            ViewBag.CategoryList = new SelectList(await _context.CategoriesProducts.ToListAsync(), "Id", "Name", model.CategoryProductId);
             return View(model);
         }
 
@@ -151,10 +123,38 @@ namespace CMS.Backend.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
+                DeleteImage(product.ImageUrl);
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // ==============================
+        // HÀM HỖ TRỢ (PRIVATE)
+        // ==============================
+        private async Task<string> SaveImage(IFormFile image)
+        {
+            string folder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+            string filePath = Path.Combine(folder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await image.CopyToAsync(stream);
+            }
+            return "/uploads/" + fileName;
+        }
+
+        private void DeleteImage(string imageUrl)
+        {
+            if (!string.IsNullOrEmpty(imageUrl))
+            {
+                var oldPath = Path.Combine(_webHostEnvironment.WebRootPath, imageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+            }
         }
     }
 }

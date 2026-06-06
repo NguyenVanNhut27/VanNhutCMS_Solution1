@@ -21,6 +21,17 @@ namespace CMS.Data.Entities
 
         public string? Note { get; set; } // Ghi chú chung (Khách vội, cần xuất hóa đơn đỏ...)
 
+        // ==========================================
+        // CÁC TRƯỜNG BỔ SUNG CHO FORM ĐƠN HÀNG MỚI
+        // ==========================================
+
+        [StringLength(50)]
+        public string? OrderType { get; set; } // Lưu loại đơn hàng: DineIn, Takeaway, Delivery
+
+        public int GuestCount { get; set; } = 1; // Số lượng khách, mặc định là 1
+
+        // ==========================================
+
         // Bàn nào gọi? (Có thể Null nếu là đơn mua mang đi - Takeaway)
         public int? DiningTableId { get; set; }
         public DiningTable? DiningTable { get; set; }

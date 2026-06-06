@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System.Linq;
-using System;
-using CMS.Data;
+﻿using CMS.Data;
 using CMS.Data.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
@@ -193,6 +194,134 @@ namespace CMS.Backend.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
+        }
+        // ==============================================================
+        // 8. ADMIN: SỬA HÓA ĐƠN (ĐỔI BÀN / GÁN KHÁCH HÀNG)
+        // ==============================================================
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null || order.Status == OrderStatus.Completed)
+                return NotFound("Không tìm thấy đơn hoặc đơn đã thanh toán không thể sửa.");
+
+            // Lấy danh sách bàn trống (cộng thêm bàn hiện tại của đơn) để Admin chuyển bàn
+            ViewBag.DiningTables = new SelectList(_context.DiningTables
+                .Where(t => t.Status == TableStatus.Available || t.Id == order.DiningTableId), "Id", "Name", order.DiningTableId);
+
+            ViewBag.Customers = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
+
+            return View(order);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Order updatedOrder)
+        {
+            if (id != updatedOrder.Id) return NotFound();
+
+            var currentOrder = await _context.Orders.FindAsync(id);
+            if (currentOrder == null) return NotFound();
+
+            // Nếu Admin có đổi bàn, phải cập nhật trạng thái của bàn cũ và bàn mới
+            if (currentOrder.DiningTableId != updatedOrder.DiningTableId)
+            {
+                // 1. Nhả bàn cũ thành bàn trống
+                if (currentOrder.DiningTableId.HasValue)
+                {
+                    var oldTable = await _context.DiningTables.FindAsync(currentOrder.DiningTableId.Value);
+                    if (oldTable != null) oldTable.Status = TableStatus.Available;
+                }
+
+                // 2. Khóa bàn mới thành Đang có khách
+                if (updatedOrder.DiningTableId.HasValue)
+                {
+                    var newTable = await _context.DiningTables.FindAsync(updatedOrder.DiningTableId.Value);
+                    if (newTable != null) newTable.Status = TableStatus.Occupied;
+                }
+            }
+
+            // Cập nhật thông tin mới
+            currentOrder.DiningTableId = updatedOrder.DiningTableId;
+            currentOrder.CustomerId = updatedOrder.CustomerId;
+
+            _context.Orders.Update(currentOrder);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ==============================================================
+        // 9. ADMIN: XÓA / HỦY ĐƠN HÀNG HOÀN TOÀN
+        // ==============================================================
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order != null)
+            {
+                // Nếu hóa đơn có liên kết với Bàn, phải trả lại trạng thái Bàn trống
+                if (order.DiningTableId.HasValue)
+                {
+                    var table = await _context.DiningTables.FindAsync(order.DiningTableId.Value);
+                    if (table != null)
+                    {
+                        table.Status = TableStatus.Available;
+                        _context.DiningTables.Update(table);
+                    }
+                }
+
+                // Xóa toàn bộ chi tiết món ăn trước (nếu CSDL không thiết lập Cascade Delete)
+                if (order.OrderDetails.Any())
+                {
+                    _context.OrderDetails.RemoveRange(order.OrderDetails);
+                }
+
+                // Xóa hóa đơn gốc
+                _context.Orders.Remove(order);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+        // ==============================================================
+        // ADMIN: TẠO ĐƠN HÀNG THỦ CÔNG
+        // ==============================================================
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public IActionResult Create()
+        {
+            // Chỉ lấy những bàn đang trống để Admin chọn
+            ViewBag.DiningTables = new SelectList(_context.DiningTables.Where(t => t.Status == TableStatus.Available), "Id", "Name");
+            ViewBag.Customers = new SelectList(_context.Customers, "Id", "FullName");
+            return View();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Order order)
+        {
+            order.OrderTime = DateTime.Now;
+            order.Status = OrderStatus.Pending;
+
+            // Nếu Admin chọn Bàn, phải khóa bàn đó lại
+            if (order.DiningTableId.HasValue)
+            {
+                var table = await _context.DiningTables.FindAsync(order.DiningTableId.Value);
+                if (table != null) table.Status = TableStatus.Occupied;
+            }
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            // Tạo xong bay thẳng vào trang Chi tiết để thêm món
+            return RedirectToAction(nameof(Details), new { id = order.Id });
         }
     }
 }

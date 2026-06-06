@@ -1,5 +1,5 @@
 ﻿@{
-    Layout = null; // Trang đăng nhập độc lập, không dùng Layout chung
+    Layout = null;
 }
 <!DOCTYPE html>
 <html>
@@ -29,8 +29,13 @@
                             {
                                 <div class="alert alert-danger py-2">@ViewBag.Error</div>
                             }
-                            <button type="submit" class="btn btn-primary w-100">ĐĂNG NHẬP</button>
+                            <button type="submit" class="btn btn-primary w-100 mb-3">ĐĂNG NHẬP</button>
                         </form>
+
+                        <div class="text-center mt-2">
+                            <small class="text-muted">Chưa có tài khoản?</small>
+                            <a asp-action="Register" class="text-decoration-none fw-bold">Đăng ký ngay</a>
+                        </div>
                     </div>
                 </div>
             </div>

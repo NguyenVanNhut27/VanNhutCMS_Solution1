@@ -1,0 +1,41 @@
+﻿@model CMS.Data.Entities.OrderDetail
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Chỉnh sửa số lượng món";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-pencil-square me-2"></i>Thay Đổi Số Lượng</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="OrderId" />
+                        <input type="hidden" asp-for="ProductId" />
+                        <input type="hidden" asp-for="UnitPrice" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Món ăn đang sửa</label>
+                            <input class="form-control bg-light fw-bold text-dark border-0" type="text" value="@(Model.Product?.Name ?? "Sản phẩm")" readonly />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Nhập lại số lượng mới <span class="text-danger">*</span></label>
+                            <input asp-for="Quantity" type="number" class="form-control fw-bold text-center text-warning fs-5" min="1" required />
+                            <span asp-validation-for="Quantity" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                            <a asp-controller="Order" asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-light border px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-warning px-4 fw-bold"><i class="bi bi-save me-1"></i> Cập nhật số lượng</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

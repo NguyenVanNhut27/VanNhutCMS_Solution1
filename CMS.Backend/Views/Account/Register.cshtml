@@ -1,0 +1,48 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Đăng ký tài khoản</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-success text-white text-center py-3">
+                        <h5 class="mb-0">ĐĂNG KÝ TÀI KHOẢN</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="Register" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Tên đầy đủ</label>
+                                <input type="text" name="fullName" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Tên đăng nhập</label>
+                                <input type="text" name="username" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mật khẩu</label>
+                                <input type="password" name="password" class="form-control" required />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Xác nhận mật khẩu</label>
+                                <input type="password" name="confirmPassword" class="form-control" required />
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 mb-3">ĐĂNG KÝ</button>
+
+                            <div class="text-center">
+                                <small>Đã có tài khoản? <a asp-action="Login" class="text-decoration-none">Đăng nhập</a></small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

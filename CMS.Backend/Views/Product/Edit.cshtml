@@ -12,19 +12,20 @@
                     <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-pencil-square me-2"></i>Cập Nhật Món Ăn</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="CreatedAt" />
-
-                        <div class="row g-3">
+                        <input type="hidden" asp-for="ImageUrl" /> <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark">Tên món ăn <span class="text-danger">*</span></label>
                                 <input asp-for="Name" class="form-control" required />
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark">Thuộc Danh mục <span class="text-danger">*</span></label>
-                                <select asp-for="CategoryProductId" asp-items="ViewBag.Categories" class="form-select" required></select>
+                                <label class="form-label fw-bold text-dark">Danh mục</label>
+                                <select asp-for="CategoryProductId" asp-items="ViewBag.CategoryList" class="form-select" required>
+                                    <option value="">-- Chọn danh mục --</option>
+                                </select>
                             </div>
 
                             <div class="col-md-6">
@@ -38,8 +39,15 @@
                             </div>
 
                             <div class="col-md-12">
-                                <label class="form-label fw-bold text-dark">Đường dẫn Hình ảnh (URL)</label>
-                                <input asp-for="ImageUrl" class="form-control" />
+                                <label class="form-label fw-bold text-dark">Chọn ảnh mới (nếu muốn thay đổi)</label>
+                                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                                {
+                                    <div class="mb-2">
+                                        <img src="@Model.ImageUrl" alt="Ảnh hiện tại" style="max-height: 80px;" class="rounded border" />
+                                        <small class="d-block text-muted">Ảnh hiện tại</small>
+                                    </div>
+                                }
+                                <input type="file" name="uploadImage" class="form-control" accept="image/*" />
                             </div>
 
                             <div class="col-md-12">

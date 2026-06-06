@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CMS.Data.Entities
 {
@@ -12,8 +13,10 @@ namespace CMS.Data.Entities
         [Required, MaxLength(50)]
         public string Username { get; set; } = string.Empty;
 
-        [Required]
-        public string PasswordHash { get; set; } = string.Empty;
+        [NotMapped] // Dòng này cực quan trọng
+        public string? Password { get; set; }
+
+        public string PasswordHash { get; set; }
 
         [Required, MaxLength(100)]
         public string FullName { get; set; } = string.Empty;

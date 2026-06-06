@@ -21,6 +21,7 @@ namespace CMS.Data
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<InventoryReceipt> InventoryReceipts { get; set; }
         public DbSet<InventoryReceiptDetail> InventoryReceiptDetails { get; set; }
+        public DbSet<Post> Posts { get; set; }
 
         // Bạn có thể xóa DbSet<Post> nếu không cần dùng tính năng viết tin tức nữa
     }

@@ -1,0 +1,68 @@
+﻿@model CMS.Data.Entities.Order
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Tạo Đơn Hàng Mới";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-cart-plus me-2"></i>Tạo Hóa Đơn Mới</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Loại đơn hàng</label>
+                                <select name="OrderType" class="form-select">
+                                    <option value="DineIn">🍽️ Ăn tại quán</option>
+                                    <option value="Takeaway">🛍️ Mang đi (Takeaway)</option>
+                                    <option value="Delivery">🛵 Giao hàng (Delivery)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Khách hàng (Tích điểm VIP)</label>
+                                <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select">
+                                    <option value="">-- Khách vãng lai --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Chọn Bàn (Nếu ăn tại quán)</label>
+                                <select asp-for="DiningTableId" asp-items="ViewBag.DiningTables" class="form-select">
+                                    <option value="">-- Không chọn bàn --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Số lượng khách</label>
+                                <input type="number" name="GuestCount" class="form-control" value="1" min="1" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-dark">Ghi chú đơn hàng</label>
+                                <textarea asp-for="Note" class="form-control" rows="2" placeholder="VD: Khách dặn làm nhanh, không ăn hành..."></textarea>
+                            </div>
+
+                        </div>
+
+                        <div class="alert alert-info border-0 rounded-3 small mt-4">
+                            <i class="bi bi-info-circle me-1"></i> Hóa đơn sẽ được tạo với trạng thái <strong>Đang phục vụ</strong> và giờ vào là thời điểm hiện tại.
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-3">
+                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">
+                                <i class="bi bi-arrow-right-circle me-1"></i> Tạo & Bắt đầu gọi món
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

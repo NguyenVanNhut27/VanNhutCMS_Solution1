@@ -1,0 +1,204 @@
+﻿@model CMS.Data.Entities.Order
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Chi tiết Đơn hàng";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark fw-bold mb-0">Chi Tiết Hóa Đơn #ORD-@Model.Id</h2>
+            <p class="text-muted mb-0">Quản lý món ăn và thanh toán cho khách</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-light border shadow-sm me-2">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <button class="btn btn-secondary shadow-sm" onclick="window.print()">
+                <i class="bi bi-printer"></i> In Hóa Đơn
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle text-primary me-2"></i>Thông tin Hóa đơn</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Loại đơn:</span>
+                            <span class="fw-bold text-dark">
+                                @if (Model.OrderType == "Takeaway")
+                                {
+                                    <span>🛍️ Mang đi</span>
+                                }
+                                else if (Model.OrderType == "Delivery")
+                                {
+                                    <span>🛵 Giao hàng</span>
+                                }
+                                else
+                                {
+                                    <span>🍽️ Ăn tại quán</span>
+                                }
+                            </span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Bàn:</span>
+                            <span class="fw-bold fs-6 text-primary">@(Model.DiningTable?.Name ?? "Không sử dụng bàn")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Khách hàng:</span>
+                            <span class="fw-bold">@(Model.Customer?.FullName ?? "Khách vãng lai")</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Số lượng khách:</span>
+                            <span class="fw-bold">@Model.GuestCount người</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Giờ vào:</span>
+                            <span>@Model.OrderTime.ToString("HH:mm - dd/MM/yyyy")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Trạng thái:</span>
+                            @if (Model.Status == CMS.Data.Entities.OrderStatus.Pending)
+                            {
+                                <span class="badge bg-warning text-dark px-2 py-1">Đang phục vụ</span>
+                            }
+                            else if (Model.Status == CMS.Data.Entities.OrderStatus.Completed)
+                            {
+                                <span class="badge bg-success px-2 py-1">Đã thanh toán</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary px-2 py-1">Đã hủy</span>
+                            }
+                        </li>
+
+                        @if (!string.IsNullOrEmpty(Model.Note))
+                        {
+                            <li class="list-group-item px-0 bg-light rounded mt-2 p-2 border">
+                                <span class="text-muted d-block small mb-1"><i class="bi bi-journal-text"></i> Ghi chú:</span>
+                                <span class="fw-bold text-danger fst-italic small">@Model.Note</span>
+                            </li>
+                        }
+                    </ul>
+
+                    @if (Model.Status == CMS.Data.Entities.OrderStatus.Pending)
+                    {
+                        <div class="bg-light p-3 rounded-3 border">
+                            <form asp-controller="Order" asp-action="Checkout" method="post">
+                                <input type="hidden" name="orderId" value="@Model.Id" />
+
+                                <label class="form-label fw-bold text-dark small">Phương thức thanh toán:</label>
+                                <select name="method" class="form-select mb-3">
+                                    <option value="0">Tiền mặt</option>
+                                    <option value="1">Chuyển khoản / Quẹt thẻ</option>
+                                </select>
+
+                                <button type="submit" class="btn btn-success w-100 fw-bold fs-5 shadow-sm" onclick="return confirm('Xác nhận thu tiền và đóng hóa đơn này?');">
+                                    <i class="bi bi-cash-coin me-2"></i> THANH TOÁN
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-receipt text-primary me-2"></i>Danh sách món đã gọi</h6>
+
+                    @if (Model.Status == CMS.Data.Entities.OrderStatus.Pending)
+                    {
+                        <a asp-controller="OrderDetail" asp-action="Create" asp-route-orderId="@Model.Id" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i> Gọi thêm món
+                        </a>
+                    }
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover table-borderless align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Tên món</th>
+                                <th class="text-center">SL</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                                <th class="text-center">Bếp</th>
+                                <th class="text-end pe-4">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                            {
+                                foreach (var detail in Model.OrderDetails)
+                                {
+                                    <tr class="border-bottom">
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark">@(detail.Product?.Name ?? "Sản phẩm")</div>
+                                            @if (!string.IsNullOrEmpty(detail.Note))
+                                            {
+                                                <div class="small text-danger fst-italic">Ghi chú: @detail.Note</div>
+                                            }
+                                        </td>
+                                        <td class="text-center fw-bold text-primary fs-6">@detail.Quantity</td>
+                                        <td class="text-end text-muted">@detail.UnitPrice.ToString("N0") đ</td>
+                                        <td class="text-end text-danger fw-bold">
+                                            @((detail.Quantity * detail.UnitPrice).ToString("N0")) đ
+                                        </td>
+                                        <td class="text-center">
+                                            @if (detail.IsServed)
+                                            {
+                                                <i class="bi bi-check-circle-fill text-success" title="Đã lên món"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-hourglass-split text-warning" title="Đang chờ bếp"></i>
+                                            }
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            @if (Model.Status == CMS.Data.Entities.OrderStatus.Pending)
+                                            {
+                                                <a asp-controller="OrderDetail" asp-action="Edit" asp-route-id="@detail.Id" class="btn btn-sm btn-link text-warning p-1 me-1" title="Sửa SL">
+                                                    <i class="bi bi-pencil-square fs-5"></i>
+                                                </a>
+                                                <a asp-controller="OrderDetail" asp-action="Delete" asp-route-id="@detail.Id" class="btn btn-sm btn-link text-danger p-1" title="Xóa món" onclick="return confirm('Xóa món này khỏi hóa đơn?');">
+                                                    <i class="bi bi-trash fs-5"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-lock text-muted" title="Đã chốt bill"></i>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">Bàn này chưa gọi món nào.</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold pt-3 pb-3">TỔNG CỘNG:</td>
+                                <td colspan="3" class="text-start ps-4 text-danger fw-bold fs-4 pt-3 pb-3">
+                                    @(Model.OrderDetails?.Sum(d => d.Quantity * d.UnitPrice).ToString("N0") ?? "0") đ
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+﻿@model CMS.Data.Entities.Order
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Chỉnh sửa Đơn hàng";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-pencil-square me-2"></i>Cập Nhật Đơn Hàng</h5>
+                    <span class="badge bg-light text-primary border border-primary fs-6 px-3 py-2">Mã: #ORD-@Model.Id</span>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="OrderTime" />
+                        <input type="hidden" asp-for="Status" />
+                        <input type="hidden" asp-for="TotalAmount" />
+                        <input type="hidden" asp-for="PaymentTime" />
+                        <input type="hidden" asp-for="PaymentMethod" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Loại đơn hàng</label>
+                                <select asp-for="OrderType" class="form-select">
+                                    <option value="DineIn">🍽️ Ăn tại quán</option>
+                                    <option value="Takeaway">🛍️ Mang đi (Takeaway)</option>
+                                    <option value="Delivery">🛵 Giao hàng (Delivery)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Cập nhật Khách Hàng</label>
+                                <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select">
+                                    <option value="">-- Khách vãng lai --</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Chuyển Bàn Mới</label>
+                                <select asp-for="DiningTableId" asp-items="ViewBag.DiningTables" class="form-select border-warning">
+                                    <option value="">-- Đơn Mang Đi / Không có bàn --</option>
+                                </select>
+                                <div class="form-text small text-muted">Hệ thống sẽ tự động cập nhật trạng thái bàn.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Số lượng khách</label>
+                                <input asp-for="GuestCount" type="number" class="form-control" min="1" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-dark">Ghi chú đơn hàng</label>
+                                <textarea asp-for="Note" class="form-control" rows="2" placeholder="Ghi chú lưu ý cho bếp hoặc thu ngân..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-4 border-top mt-4">
+                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-warning px-4 fw-bold text-dark">
+                                <i class="bi bi-save me-1"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

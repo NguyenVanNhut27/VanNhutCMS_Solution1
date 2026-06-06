@@ -21,7 +21,52 @@ namespace CMS.Backend.Controllers
         {
             _context = context;
         }
+        // GET: Đăng ký
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
 
+        // POST: Đăng ký
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(User model, string confirmPassword)
+        {
+            // Kiểm tra xem tên đăng nhập đã tồn tại chưa
+            if (_context.Users.Any(u => u.Username == model.Username))
+            {
+                ModelState.AddModelError("", "Tên đăng nhập này đã được sử dụng!");
+                return View(model);
+            }
+
+            // Kiểm tra mật khẩu xác nhận
+            if (model.Password != confirmPassword)
+            {
+                ModelState.AddModelError("", "Mật khẩu xác nhận không khớp.");
+                return View(model);
+            }
+
+            if (ModelState.IsValid)
+            {
+                // 1. Hash mật khẩu trước khi lưu vào PasswordHash
+                model.PasswordHash = HashPassword(model.Password);
+
+                // 2. Thiết lập các giá trị mặc định
+                model.CreatedAt = DateTime.Now;
+                model.IsActive = true; // Cho phép đăng nhập ngay sau khi đăng ký
+                model.Role = UserRole.Waiter; // Mặc định là nhân viên phục vụ (hoặc tùy bạn chọn)
+
+                _context.Users.Add(model);
+                await _context.SaveChangesAsync();
+
+                // 3. Thông báo thành công và chuyển hướng
+                TempData["Success"] = "Đăng ký thành công! Mời bạn đăng nhập.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View(model);
+        }
         [HttpGet]
         public IActionResult Login()
         {
