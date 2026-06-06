@@ -1,0 +1,69 @@
+﻿@model CMS.Data.Entities.Promotion
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Chỉnh sửa Khuyến mãi";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Khuyến Mãi</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold text-dark">Tiêu đề chương trình <span class="text-danger">*</span></label>
+                                <input asp-for="Title" class="form-control" required />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-dark">Mức giảm (%) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input asp-for="DiscountPercent" type="number" class="form-control text-danger fw-bold" required min="0" max="100" />
+                                    <span class="input-group-text bg-light">%</span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Ngày bắt đầu <span class="text-danger">*</span></label>
+                                <input asp-for="StartDate" type="datetime-local" class="form-control" required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-dark">Ngày kết thúc <span class="text-danger">*</span></label>
+                                <input asp-for="EndDate" type="datetime-local" class="form-control" required />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-dark">Đường dẫn Banner (ImageUrl)</label>
+                                <input asp-for="ImageUrl" class="form-control" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold text-dark">Nội dung / Điều kiện áp dụng <span class="text-danger">*</span></label>
+                                <textarea asp-for="Content" class="form-control" rows="3" required></textarea>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="IsActive" role="switch">
+                                    <label class="form-check-label fw-bold text-dark" asp-for="IsActive">Đang kích hoạt</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-warning px-4 fw-bold"><i class="bi bi-save me-1"></i> Cập nhật</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
