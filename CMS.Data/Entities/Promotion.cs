@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http; // Ensure this using directive is present
 
 namespace CMS.Data.Entities
 {
@@ -17,6 +19,12 @@ namespace CMS.Data.Entities
 
         [MaxLength(500)]
         public string? ImageUrl { get; set; } // Banner quảng cáo
+
+        // ==========================================================
+        // ĐÃ THÊM: Tiếp nhận file hình ảnh từ form upload và không lưu vào DB
+        // ==========================================================
+        [NotMapped]
+        public IFormFile? ImageFile { get; set; }
 
         // ==========================================
         // CÁC TRƯỜNG ĐẶC THÙ CHO KHUYẾN MÃI

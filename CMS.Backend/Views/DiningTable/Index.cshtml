@@ -1,0 +1,134 @@
+﻿@model IEnumerable<CMS.Data.Entities.DiningTable>
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Quản lý bàn";
+}
+
+<div class="container-fluid px-4 mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-1 text-gray-800 fw-bold">Quản lý Sơ đồ Bàn</h2>
+            <p class="text-muted mb-0">Thiết lập và theo dõi trạng thái các bàn ăn trong nhà hàng</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm rounded-pill px-4 py-2 fw-medium d-flex align-items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Thêm bàn mới
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 d-flex align-items-center" role="alert">
+            <svg class="me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 d-flex align-items-center" role="alert">
+            <svg class="me-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-muted" style="border-bottom: 2px solid #e2e8f0;">
+                        <tr>
+                            <th class="ps-4 py-3 fw-semibold border-0 text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Mã bàn</th>
+                            <th class="py-3 fw-semibold border-0 text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Tên Bàn</th>
+                            <th class="py-3 fw-semibold border-0 text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Sức chứa</th>
+                            <th class="py-3 fw-semibold border-0 text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Trạng thái</th>
+                            <th class="pe-4 py-3 fw-semibold border-0 text-uppercase text-end" style="font-size: 0.85rem; letter-spacing: 0.5px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary opacity-25 mb-3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                                    <p class="mb-0 fs-5">Chưa có dữ liệu bàn ăn</p>
+                                    <p class="text-secondary opacity-75 fs-6">Hãy thêm bàn mới để bắt đầu sử dụng hệ thống.</p>
+                                </td>
+                            </tr>
+                        }
+
+                        @foreach (var item in Model)
+                        {
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td class="ps-4 fw-medium text-secondary">
+                                    #@item.Id
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-3 d-flex justify-content-center align-items-center me-3" style="width: 44px; height: 44px;">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="2" ry="2"></rect><line x1="7" y1="16" x2="7" y2="22"></line><line x1="17" y1="16" x2="17" y2="22"></line><line x1="3" y1="12" x2="1" y2="12"></line><line x1="23" y1="12" x2="21" y2="12"></line></svg>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block fs-6">@item.Name</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center text-secondary fw-medium">
+                                        <svg class="me-2 text-slate-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                        @item.Capacity khách
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (item.Status == CMS.Data.Entities.TableStatus.Available)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center">
+                                            <span class="bg-success rounded-circle me-2 d-inline-block" style="width: 6px; height: 6px;"></span>
+                                            Trống
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-2 fw-semibold d-inline-flex align-items-center">
+                                            <span class="bg-warning rounded-circle me-2 d-inline-block" style="width: 6px; height: 6px;"></span>
+                                            Đang phục vụ
+                                        </span>
+                                    }
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-medium transition-all">
+                                            Sửa
+                                        </a>
+
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bàn @item.Name?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-3 fw-medium transition-all">
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Thêm một chút CSS inline nhẹ để tạo hiệu ứng hover cho các nút hành động */
+    .btn-outline-primary:hover {
+        background-color: #0d6efd !important;
+        color: white !important;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f8fafc;
+    }
+</style>

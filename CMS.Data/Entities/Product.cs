@@ -23,6 +23,12 @@ namespace CMS.Data.Entities
         public bool IsAvailable { get; set; } = true; // Trạng thái: Còn món (true) / Hết nguyên liệu (false)
 
         // ==========================================
+        // ĐÃ THÊM: CÁC CỜ ĐÁNH DẤU TRẠNG THÁI MÓN ĂN
+        // ==========================================
+        public bool IsNew { get; set; } = false; // Đánh dấu món mới
+        public bool IsSale { get; set; } = false; // Đánh dấu món đang được phép áp dụng Khuyến mãi
+
+        // ==========================================
         // QUẢN LÝ TỒN KHO (INVENTORY)
         // ==========================================
         [Required(ErrorMessage = "Số lượng tồn kho không được để trống")]
@@ -36,7 +42,9 @@ namespace CMS.Data.Entities
         // ==========================================
         [Required(ErrorMessage = "Vui lòng chọn danh mục cho món ăn")]
         public int CategoryProductId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
         // Khai báo rõ ForeignKey giúp EF Core kết nối 2 bảng chính xác 100%
         [ForeignKey("CategoryProductId")]
         public virtual CategoryProduct? CategoryProduct { get; set; }

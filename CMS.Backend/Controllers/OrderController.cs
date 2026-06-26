@@ -66,6 +66,7 @@ namespace CMS.Backend.Controllers
             }
             return RedirectToAction(nameof(KitchenQueue));
         }
+
         // ==============================================================
         // 5. PHỤC VỤ MỞ BÀN & TẠO ĐƠN HÀNG MỚI
         // ==============================================================
@@ -73,28 +74,26 @@ namespace CMS.Backend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateOrder(int tableId)
         {
-            // Kiểm tra xem bàn có tồn tại và đang trống không
             var table = await _context.DiningTables.FindAsync(tableId);
             if (table == null || table.Status != TableStatus.Available)
             {
                 return BadRequest("Bàn không hợp lệ hoặc đang có khách.");
             }
 
-            // Tạo hóa đơn mới
             var order = new Order
             {
                 DiningTableId = tableId,
                 OrderTime = DateTime.Now,
-                Status = OrderStatus.Pending
+                Status = OrderStatus.Pending,
+                OrderType = "DineIn", // Mặc định mở bàn là ăn tại quán
+                GuestCount = 1
             };
 
-            // Khóa bàn lại (Chuyển sang trạng thái Đang có khách)
             table.Status = TableStatus.Occupied;
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Chuyển hướng sang trang Chi tiết đơn hàng để bắt đầu chọn món
             return RedirectToAction(nameof(Details), new { id = order.Id });
         }
 
@@ -108,26 +107,24 @@ namespace CMS.Backend.Controllers
             var product = await _context.Products.FindAsync(productId);
             if (product == null) return NotFound();
 
-            // Lưu chi tiết món khách vừa gọi
             var orderDetail = new OrderDetail
             {
                 OrderId = orderId,
                 ProductId = productId,
                 Quantity = quantity,
-                UnitPrice = product.Price, // Chốt giá tại thời điểm gọi món
-                Note = note, // Ít đá, không hành...
-                IsServed = false // Trạng thái: Bếp chưa nấu
+                UnitPrice = product.Price,
+                Note = note,
+                IsServed = false
             };
 
             _context.OrderDetails.Add(orderDetail);
             await _context.SaveChangesAsync();
 
-            // Tải lại trang chi tiết để thấy món vừa thêm
             return RedirectToAction(nameof(Details), new { id = orderId });
         }
 
         // ==============================================================
-        // BẢN CẬP NHẬT TRỌNG TÂM: TRỪ TỒN KHO KHI THANH TOÁN
+        // 7. TRỪ TỒN KHO KHI THANH TOÁN
         // ==============================================================
         [Authorize(Roles = "Admin,Cashier")]
         [HttpPost]
@@ -138,7 +135,6 @@ namespace CMS.Backend.Controllers
             {
                 try
                 {
-                    // Lấy hóa đơn KÈM THÔNG TIN MÓN ĂN (Product) để trừ kho
                     var order = await _context.Orders
                         .Include(o => o.OrderDetails)
                         .ThenInclude(d => d.Product)
@@ -156,9 +152,8 @@ namespace CMS.Backend.Controllers
                     {
                         if (detail.Product != null)
                         {
-                            detail.Product.StockQuantity -= detail.Quantity; // Phép trừ
+                            detail.Product.StockQuantity -= detail.Quantity;
 
-                            // Ngăn chặn trường hợp số lượng kho bị âm
                             if (detail.Product.StockQuantity < 0)
                             {
                                 detail.Product.StockQuantity = 0;
@@ -195,8 +190,9 @@ namespace CMS.Backend.Controllers
                 }
             }
         }
+
         // ==============================================================
-        // 8. ADMIN: SỬA HÓA ĐƠN (ĐỔI BÀN / GÁN KHÁCH HÀNG)
+        // 8. ADMIN: SỬA HÓA ĐƠN (ĐỔI BÀN / GÁN KHÁCH HÀNG / CẬP NHẬT GHI CHÚ)
         // ==============================================================
         [Authorize(Roles = "Admin")]
         [HttpGet]
@@ -206,11 +202,17 @@ namespace CMS.Backend.Controllers
             if (order == null || order.Status == OrderStatus.Completed)
                 return NotFound("Không tìm thấy đơn hoặc đơn đã thanh toán không thể sửa.");
 
-            // Lấy danh sách bàn trống (cộng thêm bàn hiện tại của đơn) để Admin chuyển bàn
             ViewBag.DiningTables = new SelectList(_context.DiningTables
                 .Where(t => t.Status == TableStatus.Available || t.Id == order.DiningTableId), "Id", "Name", order.DiningTableId);
 
-            ViewBag.Customers = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
+            // CẬP NHẬT: Định dạng lại danh sách Khách hàng để Select2 hiển thị được cả Tên + Số điện thoại
+            var customersList = await _context.Customers.Select(c => new
+            {
+                Id = c.Id,
+                DisplayText = c.FullName + " - " + (c.PhoneNumber ?? "Không có SĐT")
+            }).ToListAsync();
+
+            ViewBag.Customers = new SelectList(customersList, "Id", "DisplayText", order.CustomerId);
 
             return View(order);
         }
@@ -225,17 +227,15 @@ namespace CMS.Backend.Controllers
             var currentOrder = await _context.Orders.FindAsync(id);
             if (currentOrder == null) return NotFound();
 
-            // Nếu Admin có đổi bàn, phải cập nhật trạng thái của bàn cũ và bàn mới
+            // Xử lý đổi bàn
             if (currentOrder.DiningTableId != updatedOrder.DiningTableId)
             {
-                // 1. Nhả bàn cũ thành bàn trống
                 if (currentOrder.DiningTableId.HasValue)
                 {
                     var oldTable = await _context.DiningTables.FindAsync(currentOrder.DiningTableId.Value);
                     if (oldTable != null) oldTable.Status = TableStatus.Available;
                 }
 
-                // 2. Khóa bàn mới thành Đang có khách
                 if (updatedOrder.DiningTableId.HasValue)
                 {
                     var newTable = await _context.DiningTables.FindAsync(updatedOrder.DiningTableId.Value);
@@ -246,6 +246,9 @@ namespace CMS.Backend.Controllers
             // Cập nhật thông tin mới
             currentOrder.DiningTableId = updatedOrder.DiningTableId;
             currentOrder.CustomerId = updatedOrder.CustomerId;
+            currentOrder.OrderType = updatedOrder.OrderType;     // Lưu Loại đơn
+            currentOrder.GuestCount = updatedOrder.GuestCount;   // Lưu Số lượng khách
+            currentOrder.Note = updatedOrder.Note;               // Lưu Ghi chú
 
             _context.Orders.Update(currentOrder);
             await _context.SaveChangesAsync();
@@ -265,7 +268,6 @@ namespace CMS.Backend.Controllers
 
             if (order != null)
             {
-                // Nếu hóa đơn có liên kết với Bàn, phải trả lại trạng thái Bàn trống
                 if (order.DiningTableId.HasValue)
                 {
                     var table = await _context.DiningTables.FindAsync(order.DiningTableId.Value);
@@ -276,29 +278,36 @@ namespace CMS.Backend.Controllers
                     }
                 }
 
-                // Xóa toàn bộ chi tiết món ăn trước (nếu CSDL không thiết lập Cascade Delete)
                 if (order.OrderDetails.Any())
                 {
                     _context.OrderDetails.RemoveRange(order.OrderDetails);
                 }
 
-                // Xóa hóa đơn gốc
                 _context.Orders.Remove(order);
                 await _context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Index));
         }
+
         // ==============================================================
-        // ADMIN: TẠO ĐƠN HÀNG THỦ CÔNG
+        // 10. ADMIN: TẠO ĐƠN HÀNG THỦ CÔNG
         // ==============================================================
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            // Chỉ lấy những bàn đang trống để Admin chọn
-            ViewBag.DiningTables = new SelectList(_context.DiningTables.Where(t => t.Status == TableStatus.Available), "Id", "Name");
-            ViewBag.Customers = new SelectList(_context.Customers, "Id", "FullName");
+            ViewBag.DiningTables = new SelectList(await _context.DiningTables.Where(t => t.Status == TableStatus.Available).ToListAsync(), "Id", "Name");
+
+            // CẬP NHẬT: Gộp Tên và Số điện thoại cho Select2
+            var customersList = await _context.Customers.Select(c => new
+            {
+                Id = c.Id,
+                DisplayText = c.FullName + " - " + (c.PhoneNumber ?? "Không có SĐT")
+            }).ToListAsync();
+
+            ViewBag.Customers = new SelectList(customersList, "Id", "DisplayText");
+
             return View();
         }
 
@@ -310,7 +319,6 @@ namespace CMS.Backend.Controllers
             order.OrderTime = DateTime.Now;
             order.Status = OrderStatus.Pending;
 
-            // Nếu Admin chọn Bàn, phải khóa bàn đó lại
             if (order.DiningTableId.HasValue)
             {
                 var table = await _context.DiningTables.FindAsync(order.DiningTableId.Value);
@@ -320,7 +328,6 @@ namespace CMS.Backend.Controllers
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Tạo xong bay thẳng vào trang Chi tiết để thêm món
             return RedirectToAction(nameof(Details), new { id = order.Id });
         }
     }

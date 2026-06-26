@@ -4,6 +4,9 @@
     ViewData["Title"] = "Tạo Đơn Hàng Mới";
 }
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
 <div class="container-fluid mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
@@ -13,11 +16,10 @@
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="Create" method="post">
-                        <div class="row g-3">
-
+                        <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark">Loại đơn hàng</label>
-                                <select name="OrderType" class="form-select">
+                                <select asp-for="OrderType" class="form-select border-primary shadow-sm">
                                     <option value="DineIn">🍽️ Ăn tại quán</option>
                                     <option value="Takeaway">🛍️ Mang đi (Takeaway)</option>
                                     <option value="Delivery">🛵 Giao hàng (Delivery)</option>
@@ -25,39 +27,43 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark">Khách hàng (Tích điểm VIP)</label>
-                                <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select">
-                                    <option value="">-- Khách vãng lai --</option>
+                                <label class="form-label fw-bold text-dark d-flex justify-content-between">
+                                    Khách hàng (Tìm kiếm)
+                                </label>
+                                <select asp-for="CustomerId" asp-items="ViewBag.Customers" class="form-select select2-search" data-placeholder="🔍 Gõ tên hoặc SĐT để tìm...">
+                                    <option value="">-- Khách vãng lai (Không tích điểm) --</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark">Chọn Bàn (Nếu ăn tại quán)</label>
-                                <select asp-for="DiningTableId" asp-items="ViewBag.DiningTables" class="form-select">
-                                    <option value="">-- Không chọn bàn --</option>
+                                <label class="form-label fw-bold text-dark">Chọn Bàn / Khu vực</label>
+                                <select asp-for="DiningTableId" asp-items="ViewBag.DiningTables" class="form-select select2-search" data-placeholder="🔍 Nhập số bàn (VD: Bàn 5)...">
+                                    <option value="">-- Đơn mang đi / Không cần bàn --</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-dark">Số lượng khách</label>
-                                <input type="number" name="GuestCount" class="form-control" value="1" min="1" />
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-light"><i class="bi bi-people"></i></span>
+                                    <input asp-for="GuestCount" type="number" class="form-control" min="1" value="1" />
+                                </div>
                             </div>
 
                             <div class="col-md-12">
                                 <label class="form-label fw-bold text-dark">Ghi chú đơn hàng</label>
-                                <textarea asp-for="Note" class="form-control" rows="2" placeholder="VD: Khách dặn làm nhanh, không ăn hành..."></textarea>
+                                <textarea asp-for="Note" class="form-control shadow-sm" rows="2" placeholder="Ghi chú lưu ý cho bếp (Không hành, ít cay...)"></textarea>
                             </div>
-
                         </div>
 
-                        <div class="alert alert-info border-0 rounded-3 small mt-4">
-                            <i class="bi bi-info-circle me-1"></i> Hóa đơn sẽ được tạo với trạng thái <strong>Đang phục vụ</strong> và giờ vào là thời điểm hiện tại.
+                        <div class="alert alert-info border-0 rounded-3 small mt-4 shadow-sm">
+                            <i class="bi bi-info-circle-fill me-1"></i> Hóa đơn sẽ được tạo với trạng thái <strong>Đang phục vụ</strong>. Thu ngân vui lòng kiểm tra kỹ thông tin bàn.
                         </div>
 
                         <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-3">
-                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
-                            <button type="submit" class="btn btn-primary px-4 fw-bold">
-                                <i class="bi bi-arrow-right-circle me-1"></i> Tạo & Bắt đầu gọi món
+                            <a asp-action="Index" class="btn btn-light border px-4 shadow-sm">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i> Bắt đầu gọi món
                             </button>
                         </div>
                     </form>
@@ -66,3 +72,19 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Áp dụng Select2 cho tất cả thẻ <select> có class 'select2-search'
+            $('.select2-search').select2({
+                theme: 'bootstrap-5', // Sử dụng theme cho hợp với Bootstrap hiện tại
+                width: '100%',
+                allowClear: true // Cho phép bấm nút (x) để xóa lựa chọn
+            });
+        });
+    </script>
+}

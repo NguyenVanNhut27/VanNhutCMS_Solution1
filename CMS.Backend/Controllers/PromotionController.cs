@@ -31,21 +31,22 @@ namespace CMS.Backend.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Promotion model, IFormFile? uploadImage)
+        // ĐÃ ĐỔI: uploadImage -> ImageFile để khớp với name="ImageFile" bên file HTML
+        public async Task<IActionResult> Create(Promotion model, IFormFile? ImageFile)
         {
             if (ModelState.IsValid)
             {
-                if (uploadImage != null && uploadImage.Length > 0)
+                if (ImageFile != null && ImageFile.Length > 0)
                 {
                     string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                     if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        await uploadImage.CopyToAsync(stream);
+                        await ImageFile.CopyToAsync(stream);
                     }
                     model.ImageUrl = "/uploads/" + fileName;
                 }
@@ -67,23 +68,24 @@ namespace CMS.Backend.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Promotion model, IFormFile? uploadImage)
+        // ĐÃ ĐỔI: uploadImage -> ImageFile để khớp với name="ImageFile" bên file HTML
+        public async Task<IActionResult> Edit(int id, Promotion model, IFormFile? ImageFile)
         {
             if (id != model.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                if (uploadImage != null && uploadImage.Length > 0)
+                if (ImageFile != null && ImageFile.Length > 0)
                 {
                     string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                     if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(uploadImage.FileName);
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageFile.FileName);
                     string filePath = Path.Combine(folder, fileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        await uploadImage.CopyToAsync(stream);
+                        await ImageFile.CopyToAsync(stream);
                     }
                     model.ImageUrl = "/uploads/" + fileName;
                 }

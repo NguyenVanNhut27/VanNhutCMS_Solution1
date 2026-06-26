@@ -21,6 +21,7 @@ namespace CMS.Backend.Controllers
         {
             _context = context;
         }
+
         // GET: Đăng ký
         [HttpGet]
         public IActionResult Register()
@@ -67,6 +68,7 @@ namespace CMS.Backend.Controllers
 
             return View(model);
         }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -88,6 +90,15 @@ namespace CMS.Backend.Controllers
                 if (!user.IsActive)
                 {
                     ViewBag.Error = "Tài khoản của bạn đã bị khóa!";
+                    return View();
+                }
+
+                // ==========================================
+                // CHỐT CHẶN BẢO MẬT: TỪ CHỐI WAITER
+                // ==========================================
+                if (user.Role == UserRole.Waiter)
+                {
+                    ViewBag.Error = "Tài khoản Phục vụ vui lòng đăng nhập trên Ứng dụng POS (Frontend cổng 3000).";
                     return View();
                 }
 
@@ -147,7 +158,7 @@ namespace CMS.Backend.Controllers
                     PasswordHash = HashPassword("123456"),
                     FullName = "Thu ngân Ca 1",
                     Email = "cashier@gmail.com",
-                    Role = UserRole.Cashier, // Đã sửa
+                    Role = UserRole.Cashier,
                     IsActive = true,
                     CreatedAt = DateTime.Now
                 };
@@ -158,7 +169,7 @@ namespace CMS.Backend.Controllers
                     PasswordHash = HashPassword("123456"),
                     FullName = "Bếp trưởng",
                     Email = "chef@gmail.com",
-                    Role = UserRole.Chef, // Đã sửa
+                    Role = UserRole.Chef,
                     IsActive = true,
                     CreatedAt = DateTime.Now
                 };
@@ -169,7 +180,7 @@ namespace CMS.Backend.Controllers
                     PasswordHash = HashPassword("123456"),
                     FullName = "Nhân viên Phục vụ",
                     Email = "waiter@gmail.com",
-                    Role = UserRole.Waiter, // Đã sửa
+                    Role = UserRole.Waiter,
                     IsActive = true,
                     CreatedAt = DateTime.Now
                 };

@@ -1,46 +1,53 @@
 ﻿@model CMS.Data.Entities.DiningTable
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Sửa thông tin Bàn";
+    ViewData["Title"] = "Chỉnh sửa bàn";
 }
 
-<div class="container-fluid mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold text-warning"><i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Thông Tin Bàn</h5>
-                </div>
-                <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
-                        <input type="hidden" asp-for="Id" />
+<div class="container-fluid px-4 mt-4">
+    <div class="mb-4">
+        <h2 class="h3 mb-1 text-gray-800 fw-bold">Chỉnh Sửa Thông Tin Bàn</h2>
+        <p class="text-muted mb-0">Cập nhật tên và sức chứa của bàn ăn</p>
+    </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark">Tên / Số bàn <span class="text-danger">*</span></label>
-                                <input asp-for="Name" class="form-control" required />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-dark">Số chỗ ngồi</label>
-                                <input asp-for="Capacity" type="number" class="form-control" min="1" />
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold text-dark">Trạng thái hiện tại:</label>
-                                <select asp-for="Status" class="form-select border-warning">
-                                    <option value="0">Bàn trống (Available)</option>
-                                    <option value="1">Đang có khách (Occupied)</option>
-                                    <option value="2">Đã đặt trước (Reserved)</option>
-                                </select>
-                            </div>
-                        </div>
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="max-width: 600px;">
+        <div class="card-body p-4">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
 
-                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
-                            <button type="submit" class="btn btn-warning px-4 fw-bold"><i class="bi bi-save me-1"></i> Cập nhật</button>
-                        </div>
-                    </form>
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-semibold text-secondary">Tên Bàn</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted"><rect x="3" y="8" width="18" height="8" rx="2" ry="2"></rect><line x1="7" y1="16" x2="7" y2="22"></line><line x1="17" y1="16" x2="17" y2="22"></line><line x1="3" y1="12" x2="1" y2="12"></line><line x1="23" y1="12" x2="21" y2="12"></line></svg>
+                        </span>
+                        <input asp-for="Name" class="form-control border-start-0 ps-0" placeholder="VD: Bàn 1, VIP 1..." required />
+                    </div>
+                    <span asp-validation-for="Name" class="text-danger small"></span>
                 </div>
-            </div>
+
+                <div class="mb-4">
+                    <label asp-for="Capacity" class="form-label fw-semibold text-secondary">Số chỗ ngồi (Sức chứa)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                        </span>
+                        <input asp-for="Capacity" type="number" min="1" class="form-control border-start-0 ps-0" required />
+                    </div>
+                    <span asp-validation-for="Capacity" class="text-danger small"></span>
+                </div>
+
+                <div class="d-flex gap-2 pt-2 border-top">
+                    <button type="submit" class="btn btn-primary rounded-3 px-4 fw-medium shadow-sm">Lưu Thay Đổi</button>
+                    <a asp-action="Index" class="btn btn-light border rounded-3 px-4 fw-medium text-secondary">Hủy</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

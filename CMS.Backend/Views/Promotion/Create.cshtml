@@ -12,7 +12,8 @@
                     <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-gift me-2"></i>Thêm Chương Trình Khuyến Mãi</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label class="form-label fw-bold text-dark">Tiêu đề chương trình <span class="text-danger">*</span></label>
@@ -38,8 +39,16 @@
                             </div>
 
                             <div class="col-md-12">
-                                <label class="form-label fw-bold text-dark">Đường dẫn Banner (ImageUrl)</label>
-                                <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+                                <label class="form-label fw-bold text-dark">Hình ảnh Banner</label>
+                                <input type="file" name="ImageFile" id="imageInput" class="form-control" accept="image/*" />
+                                <input type="hidden" asp-for="ImageUrl" />
+
+                                <div class="mt-3">
+                                    <img id="imagePreview"
+                                         src=""
+                                         alt="Ảnh Preview"
+                                         style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid #ddd; object-fit: cover; display: none;" />
+                                </div>
                             </div>
 
                             <div class="col-md-12">
@@ -65,3 +74,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('imageInput').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('imagePreview');
+
+        if (file) {
+            // Tạo URL tạm thời để show ảnh lập tức trên trình duyệt
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+        } else {
+            // Nếu người dùng ấn hủy chọn
+            preview.src = '';
+            preview.style.display = 'none';
+        }
+    });
+</script>
