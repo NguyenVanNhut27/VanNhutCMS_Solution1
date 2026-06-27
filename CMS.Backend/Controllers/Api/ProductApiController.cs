@@ -20,17 +20,20 @@ namespace CMS.Backend.Controllers.Api
         [HttpGet]
         public async Task<IActionResult> GetProducts()
         {
-            // Trả về danh sách món ăn kèm Giá và Mã danh mục để React lọc
+            // Trả về danh sách món ăn kèm Giá, Mã danh mục và các CỜ TRẠNG THÁI để React lọc
             var products = await _context.Products
                 .Select(p => new
                 {
                     id = p.Id,
                     name = p.Name,
                     price = p.Price,
-                    categoryId = p.CategoryProductId, // Sửa lại đúng tên thuộc tính
-                    // Nếu bạn có cột lưu ảnh, đổi "p.Image" thành tên cột ảnh của bạn
-                    image = p.ImageUrl, // Sửa lại đúng tên thuộc tính ảnh
-                    description = p.Description
+                    categoryId = p.CategoryProductId,
+                    image = p.ImageUrl,
+                    description = p.Description,
+
+                    // ĐÃ THÊM: Gửi 2 cờ này sang cho Next.js nhận diện trạng thái Sale/New
+                    isSale = p.IsSale,
+                    isNew = p.IsNew
                 })
                 .ToListAsync();
 

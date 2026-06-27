@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization; // ĐÃ THÊM
 using Microsoft.EntityFrameworkCore;
 using CMS.Data;
 using System;
@@ -19,6 +20,7 @@ namespace CMS.Backend.Controllers.Api
         }
 
         // Lấy chương trình khuyến mãi ĐANG CHẠY hiện tại
+        [AllowAnonymous] // ĐÃ THÊM: Cho phép Frontend lấy dữ liệu không cần token
         [HttpGet("active")]
         public async Task<IActionResult> GetActivePromotion()
         {

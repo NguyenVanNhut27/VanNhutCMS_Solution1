@@ -13,12 +13,16 @@ namespace CMS.Backend
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // ĐÃ THÊM: Swagger Generator
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
             // Đăng ký DbContext vào hệ thống
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Khai báo dịch vụ xác thực Cookie
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)  
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
                     options.LoginPath = "/Account/Login"; // Đường dẫn nếu chưa đăng nhập
@@ -32,9 +36,9 @@ namespace CMS.Backend
             {
                 options.AddPolicy("AllowNextJS",
                     policy => policy.WithOrigins("http://localhost:3000") // Cổng của ứng dụng Next.js
-                                    .AllowAnyMethod()
-                                    .AllowAnyHeader()
-                                    .AllowCredentials());
+                                        .AllowAnyMethod()
+                                        .AllowAnyHeader()
+                                        .AllowCredentials());
             });
 
             var app = builder.Build();
@@ -43,8 +47,13 @@ namespace CMS.Backend
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+            }
+            else
+            {
+                // ĐÃ THÊM: Kích hoạt Swagger UI trong môi trường Development
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
