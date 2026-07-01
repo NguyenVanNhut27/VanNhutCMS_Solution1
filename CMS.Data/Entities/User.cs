@@ -16,7 +16,7 @@ namespace CMS.Data.Entities
         [NotMapped] // Dòng này cực quan trọng
         public string? Password { get; set; }
 
-        public string PasswordHash { get; set; }
+        public string PasswordHash { get; set; } = string.Empty;
 
         [Required, MaxLength(100)]
         public string FullName { get; set; } = string.Empty;

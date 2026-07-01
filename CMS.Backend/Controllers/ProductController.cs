@@ -93,8 +93,12 @@ namespace CMS.Backend.Controllers
 
                 if (uploadImage != null && uploadImage.Length > 0)
                 {
-                    // Xóa ảnh cũ
-                    DeleteImage(oldProduct.ImageUrl);
+                    // Xóa ảnh cũ (Đã bọc kiểm tra null để fix cảnh báo)
+                    if (!string.IsNullOrEmpty(oldProduct.ImageUrl))
+                    {
+                        DeleteImage(oldProduct.ImageUrl);
+                    }
+
                     // Upload ảnh mới
                     model.ImageUrl = await SaveImage(uploadImage);
                 }
@@ -123,7 +127,12 @@ namespace CMS.Backend.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                DeleteImage(product.ImageUrl);
+                // Đã bọc kiểm tra null để fix cảnh báo
+                if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    DeleteImage(product.ImageUrl);
+                }
+
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
             }
@@ -148,7 +157,8 @@ namespace CMS.Backend.Controllers
             return "/uploads/" + fileName;
         }
 
-        private void DeleteImage(string imageUrl)
+        // Đã thêm dấu "?" vào "string? imageUrl" để dứt điểm cảnh báo null
+        private void DeleteImage(string? imageUrl)
         {
             if (!string.IsNullOrEmpty(imageUrl))
             {

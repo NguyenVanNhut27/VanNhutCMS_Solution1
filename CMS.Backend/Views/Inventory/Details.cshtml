@@ -1,72 +1,183 @@
 ﻿@model CMS.Data.Entities.InventoryReceipt
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Chi tiết Phiếu Nhập";
+    ViewData["Title"] = "Chi Tiết Phiếu Nhập Kho";
+
+    // Tính toán nhanh số lượng và tổng tiền từ danh sách chi tiết
+    int totalQty = Model.Details?.Sum(d => d.Quantity) ?? 0;
+    decimal grandTotal = Model.Details?.Sum(d => d.Quantity * d.UnitPrice) ?? 0;
 }
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .info-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        font-weight: 700;
+    }
+
+    .info-value {
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .receipt-card {
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+    }
+
+    .table-transparent border-none tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .product-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+    }
+
+    @@media print {
+        /* Cấu hình tối ưu khi bấm in phiếu nhập kho */
+        .no-print {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .container-fluid {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
         <div>
-            <h2 class="text-dark fw-bold mb-0">Phiếu Nhập #RC-@Model.Id</h2>
-            <p class="text-muted mb-0">Nhà cung cấp: <span class="text-primary fw-bold">@(Model.Supplier?.Name ?? "N/A")</span></p>
+            <h2 class="text-dark fw-black mb-1" style="font-weight: 800;">
+                <i class="bi bi-receipt text-primary me-2"></i>Thông Tin Phiếu Nhập
+            </h2>
+            <p class="text-muted mb-0">Mã phiếu: <span class="font-monospace fw-bold text-primary">#@Model.Id</span></p>
         </div>
         <div class="d-flex gap-2">
-            <a asp-action="Index" class="btn btn-light border"><i class="bi bi-arrow-left"></i> Quay lại</a>
+            <a asp-action="Index" class="btn btn-light border rounded-pill px-4 fw-bold shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Danh sách phiếu
+            </a>
+            <button onclick="window.print();" class="btn btn-outline-secondary rounded-pill px-4 fw-bold shadow-sm">
+                <i class="bi bi-printer me-1"></i> In phiếu
+            </button>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-body">
-                    <h6 class="fw-bold mb-3">Thông tin</h6>
-                    <p>Ngày nhập: <b>@Model.ReceiptDate.ToString("dd/MM/yyyy HH:mm")</b></p>
-                    <p>Ghi chú: <i>@(Model.Note ?? "Không có")</i></p>
-                    <hr>
-                    <h4 class="text-danger fw-bold">Tổng tiền: @Model.TotalAmount.ToString("N0") đ</h4>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card receipt-card border-0 rounded-4 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-info-circle me-2 text-primary"></i>Thông tin chung</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3 pb-3 border-bottom border-light">
+                        <div class="info-label mb-1"><i class="bi bi-building me-1"></i> Nhà cung cấp</div>
+                        <div class="info-value fs-5 text-primary">@(Model.Supplier?.Name ?? "N/A")</div>
+                    </div>
+                    <div class="mb-3 pb-3 border-bottom border-light">
+                        <div class="info-label mb-1"><i class="bi bi-calendar3 me-1"></i> Thời gian nhập</div>
+                        <div class="info-value">@Model.ReceiptDate.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                    </div>
+                    <div class="mb-3 pb-3 border-bottom border-light">
+                        <div class="info-label mb-1"><i class="bi bi-person-badge me-1"></i> Người lập phiếu</div>
+                        <div class="info-value">@(Model.User?.FullName ?? "Admin Hệ thống")</div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="info-label mb-1"><i class="bi bi-chat-left-text me-1"></i> Ghi chú</div>
+                        <div class="info-value text-secondary fw-normal italic" style="font-style: italic;">
+                            @(string.IsNullOrEmpty(Model.Note) ? "Không có ghi chú nào cho phiếu này." : Model.Note)
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold">Danh sách nguyên liệu</h6>
-                    <a asp-controller="InventoryReceiptDetail" asp-action="Create" asp-route-receiptId="@Model.Id" class="btn btn-sm btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i> Thêm hàng
-                    </a>
+        <div class="col-lg-8">
+            <div class="card receipt-card border-0 rounded-4 shadow-sm h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-box-seam me-2 text-primary"></i>Danh sách mặt hàng nhập</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table align-middle table-transparent mb-0">
+                                <thead class="table-light text-uppercase">
+                                    <tr>
+                                        <th class="ps-4 py-3" style="font-size: 0.75rem; letter-spacing: 0.05em;">Tên mặt hàng</th>
+                                        <th class="py-3 text-center" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 15%;">Số lượng</th>
+                                        <th class="py-3 text-end" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 20%;">Đơn giá nhập</th>
+                                        <th class="py-3 text-end pe-4" style="font-size: 0.75rem; letter-spacing: 0.05em; width: 25%;">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Details != null && Model.Details.Any())
+                                    {
+                                        foreach (var detail in Model.Details)
+                                        {
+                                            var rowTotal = detail.Quantity * detail.UnitPrice;
+                                            <tr>
+                                                <td class="ps-4 py-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="product-avatar me-3 shadow-sm">
+                                                            <i class="bi bi-box fs-5"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold text-dark">@(detail.Product?.Name ?? "Sản phẩm đã bị xóa")</div>
+                                                            <div class="text-muted small">Mã SP: @detail.ProductId</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center fw-bold text-secondary">@detail.Quantity</td>
+                                                <td class="text-end font-monospace text-dark">@detail.UnitPrice.ToString("N0") đ</td>
+                                                <td class="text-end pe-4 font-monospace fw-bold text-primary">@rowTotal.ToString("N0") đ</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5 text-muted">
+                                                <i class="bi bi-exclamation-circle fs-2 d-block mb-2"></i>
+                                                Không có dữ liệu mặt hàng trong phiếu này.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Tên sản phẩm</th>
-                            <th class="text-center">Số lượng</th>
-                            <th class="text-end">Giá nhập</th>
-                            <th class="text-end">Thành tiền</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.Details != null && Model.Details.Any())
-                        {
-                            foreach (var item in Model.Details)
-                            {
-                                <tr>
-                                    <td class="ps-4 fw-bold">@(item.Product?.Name ?? "Sản phẩm")</td>
-                                    <td class="text-center">@item.Quantity</td>
-                                    <td class="text-end">@item.PurchasePrice.ToString("N0") đ</td>
-                                    <td class="text-end fw-bold text-danger">@((item.Quantity * item.PurchasePrice).ToString("N0")) đ</td>
-                                    <td class="text-center">
-                                        <a asp-controller="InventoryReceiptDetail" asp-action="Delete" asp-route-id="@item.Id"
-                                           class="btn btn-sm btn-link text-danger" onclick="return confirm('Xóa?');">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
+
+                <div class="card-footer bg-light border-top p-4">
+                    <div class="row g-3 justify-content-end">
+                        <div class="col-sm-6 col-md-5 col-lg-5">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-secondary fw-semibold">Tổng lượng hàng nhập:</span>
+                                <span class="fw-bold text-dark fs-5">@totalQty</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-10">
+                                <span class="text-secondary fw-bold">Tổng chi phí thanh toán:</span>
+                                <span class="fw-black text-danger fs-3" style="font-weight: 900;">@grandTotal.ToString("N0") đ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

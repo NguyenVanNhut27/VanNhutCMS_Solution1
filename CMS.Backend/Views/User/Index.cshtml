@@ -1,100 +1,145 @@
-﻿@model IEnumerable<CMS.Data.Entities.Promotion>
+﻿@model IEnumerable<CMS.Data.Entities.User>
 @{
     Layout = "_LayoutAdmin";
-    ViewData["Title"] = "Quản lý Khuyến mãi";
+    ViewData["Title"] = "Quản lý Người dùng";
 }
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    /* CSS tinh chỉnh UI/UX cao cấp */
+    .table-card {
+        border: 1px solid rgba(226, 232, 240, 1);
+        background: #ffffff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .table thead th {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        background-color: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table tbody tr:hover {
+            background-color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+    .avatar-circle {
+        width: 46px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 1.25rem;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+        .btn-action:hover {
+            transform: scale(1.1);
+        }
+</style>
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h2 class="text-dark fw-bold mb-0">Danh Sách Khuyến Mãi</h2>
-            <p class="text-muted mb-0">Quản lý các chương trình ưu đãi và banner quảng cáo</p>
+            <h2 class="text-dark fw-black mb-2" style="font-weight: 800;">
+                <i class="bi bi-shield-lock text-primary me-2"></i>Quản lý Tài khoản
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb text-muted fs-6 mb-0">
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-secondary"><i class="bi bi-house-door me-1"></i>Dashboard</a></li>
+                    <li class="breadcrumb-item active text-primary fw-semibold">Người dùng</li>
+                </ol>
+            </nav>
         </div>
-        <a asp-action="Create" class="btn btn-primary shadow-sm">
-            <i class="bi bi-plus-circle"></i> Thêm Chương Trình
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2 transition-all">
+            <i class="bi bi-person-plus-fill fs-5"></i>
+            <span>Thêm Tài Khoản</span>
         </a>
     </div>
 
-    <div class="card shadow-sm border-0 rounded-4">
-        <div class="card-body p-0">
-            <table class="table table-hover table-borderless align-middle mb-0">
-                <thead class="table-light border-bottom">
+    <div class="card table-card border-0 rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
                     <tr>
-                        <th class="ps-4">Banner</th>
-                        <th>Tên Chương Trình</th>
-                        <th>Mức Giảm</th>
-                        <th>Thời Gian Áp Dụng</th>
-                        <th>Trạng Thái</th>
-                        <th class="text-end pe-4">Thao tác</th>
+                        <th class="ps-4 py-3 border-0">Họ tên & Thông tin</th>
+                        <th class="py-3 border-0">Tên đăng nhập</th>
+                        <th class="py-3 border-0">Liên hệ</th>
+                        <th class="py-3 border-0">Phân quyền</th>
+                        <th class="text-center py-3 border-0">Trạng thái</th>
+                        <th class="text-end pe-4 py-3 border-0">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model != null && Model.Any())
                     {
-                        foreach (var item in Model)
+                        @foreach (var user in Model)
                         {
-                            <tr class="border-bottom">
-                                <td class="ps-4">
-                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
-                                    {
-                                        // Xử lý đường dẫn ảnh: Đổi dấu \ thành / và thêm / ở đầu nếu là file local
-                                        string imgUrl = item.ImageUrl.Replace("\\", "/");
-                                        if (!imgUrl.StartsWith("http") && !imgUrl.StartsWith("/"))
-                                        {
-                                            imgUrl = "/" + imgUrl;
-                                        }
-
-                                        <img src="@imgUrl" alt="Banner" class="rounded-3" style="width: 80px; height: 45px; object-fit: cover; border: 1px solid #eee;">
-                                    }
-                                    else
-                                    {
-                                        <div class="rounded-3 bg-light d-flex align-items-center justify-content-center text-muted" style="width: 80px; height: 45px; border: 1px dashed #ccc; font-size: 0.8rem;">
-                                            No Image
+                            <tr class="border-bottom border-light">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3 shadow-sm">
+                                            @user.FullName.Substring(0, 1).ToUpper()
                                         </div>
-                                    }
+                                        <div>
+                                            <div class="fw-bold text-dark fs-6 mb-1">@user.FullName</div>
+                                            <div class="badge bg-secondary bg-opacity-10 text-secondary border">
+                                                <i class="bi bi-hash"></i>ID: @user.Id
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>
-                                    <div class="fw-bold text-dark fs-6">@item.Title</div>
-                                    <div class="small text-muted text-truncate" style="max-width: 200px;">@item.Content</div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-danger px-3 py-2 rounded-pill fs-6">
-                                        <i class="bi bi-tags me-1"></i> -@item.DiscountPercent %
+                                    <span class="font-monospace text-primary bg-primary bg-opacity-10 px-2 py-1.5 rounded-3 fw-semibold">
+                                        <i class="bi bi-at"></i>@user.Username
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="small text-dark">
-                                        <strong>Từ:</strong> @item.StartDate.ToString("dd/MM/yyyy HH:mm")
-                                    </div>
-                                    <div class="small text-dark mt-1">
-                                        <strong>Đến:</strong> @item.EndDate.ToString("dd/MM/yyyy HH:mm")
+                                    <div class="d-flex align-items-center text-secondary">
+                                        <i class="bi bi-envelope-paper me-2 text-muted fs-5"></i>
+                                        <span>@user.Email</span>
                                     </div>
                                 </td>
                                 <td>
-                                    @if (!item.IsActive)
-                                    {
-                                        <span class="badge bg-secondary px-2 py-1">Đã tắt</span>
-                                    }
-                                    else if (item.EndDate < DateTime.Now)
-                                    {
-                                        <span class="badge bg-warning text-dark px-2 py-1">Hết hạn</span>
-                                    }
-                                    else if (item.StartDate > DateTime.Now)
-                                    {
-                                        <span class="badge bg-info text-dark px-2 py-1">Sắp diễn ra</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success px-2 py-1">Đang diễn ra</span>
-                                    }
+                                    <span class="badge bg-dark text-white rounded-pill px-3 py-2 shadow-sm">
+                                        <i class="bi bi-person-badge me-1"></i> Admin
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Hoạt động
+                                    </span>
                                 </td>
                                 <td class="text-end pe-4">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                        <i class="bi bi-pencil-square"></i> Sửa
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Bạn có chắc chắn muốn xóa chương trình này?');">
-                                        <i class="bi bi-trash"></i> Xóa
-                                    </a>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-action="Edit" asp-route-id="@user.Id" class="btn-action bg-light text-primary border" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@user.Id" class="btn-action bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản [@user.Username] không?');" title="Xóa tài khoản">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -102,9 +147,17 @@
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <i class="bi bi-gift fs-1 d-block mb-3 text-secondary opacity-50"></i>
-                                <h5>Chưa có chương trình khuyến mãi</h5>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="py-5 d-flex flex-column align-items-center justify-content-center">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                        <i class="bi bi-people text-muted" style="font-size: 2.5rem;"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Chưa có người dùng nào</h5>
+                                    <p class="text-muted mb-4">Hệ thống hiện tại chưa có tài khoản nào được tạo.</p>
+                                    <a asp-action="Create" class="btn btn-outline-primary rounded-pill px-4 fw-semibold">
+                                        <i class="bi bi-plus-lg me-1"></i> Thêm mới ngay
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     }
